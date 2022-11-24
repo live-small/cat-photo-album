@@ -55,4 +55,10 @@ export default function Nodes({ $container, initialState, onClick, onPrevClick }
     if (!targetNode) return;
     onClick(targetNode);
   });
+
+  window.addEventListener('keydown', (e) => {
+    if (!this.state.isRoot && e.key === 'Backspace') {
+      onPrevClick();
+    }
+  });
 }
