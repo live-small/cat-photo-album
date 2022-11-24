@@ -6,6 +6,8 @@ export default function ImageViewer({ $container, initialState, onClose }) {
   this.state = initialState;
 
   this.setState = (newState) => {
+    if (newState === this.state) return;
+
     this.state = newState;
     this.render();
   };

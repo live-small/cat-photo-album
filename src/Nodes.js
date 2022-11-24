@@ -1,3 +1,5 @@
+import { isDiff } from './utils.js';
+
 export default function Nodes({ $container, initialState, onClick, onPrevClick }) {
   const $nodes = document.createElement('div');
   $nodes.className = 'Nodes';
@@ -6,7 +8,8 @@ export default function Nodes({ $container, initialState, onClick, onPrevClick }
   this.state = initialState;
 
   this.setState = (newState) => {
-    // - 이전 값과 같은지, 다른지 -> 같으면 렌더안시킴
+    if (!isDiff(this.state, newState)) return;
+
     this.state = newState;
     this.render();
   };

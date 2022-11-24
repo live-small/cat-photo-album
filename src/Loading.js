@@ -6,6 +6,8 @@ export default function Loading({ $container }) {
   this.state = false;
 
   this.setState = (newState) => {
+    if (newState === this.state) return;
+
     this.state = newState;
     this.render();
   };
