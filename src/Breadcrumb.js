@@ -19,6 +19,8 @@ export default function Breadcrumb({ $container, initialState, onClick }) {
 		`;
   };
 
+  this.render();
+
   $breadcrumb.addEventListener('click', (e) => {
     const $breadcrumbItem = e.target.closest('.Breadcrumb-item');
     const { id } = $breadcrumbItem.dataset;

@@ -6,6 +6,7 @@ export default function Nodes({ $container, initialState, onClick, onPrevClick }
   this.state = initialState;
 
   this.setState = (newState) => {
+    // - 이전 값과 같은지, 다른지 -> 같으면 렌더안시킴
     this.state = newState;
     this.render();
   };

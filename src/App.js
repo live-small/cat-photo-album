@@ -3,58 +3,72 @@ import Breadcrumb from './Breadcrumb.js';
 import ImageViewer from './ImageViewer.js';
 import Loading from './Loading.js';
 import Nodes from './Nodes.js';
+import { isBoolean, isString, isValidNodes, isValidPaths } from './validator.js';
 
 export default function App({ $container }) {
   this.state = {
     isRoot: true,
     isLoading: false,
-    selectedImageUrl: null,
+    selectedImageUrl: '',
     nodes: [],
     paths: [],
   };
 
-  this.setState = (newState) => {
-    this.state = newState;
+  const setLoading = (loadingState) => {
+    if (!isBoolean(loadingState)) return;
 
-    nodes.setState({
+    this.state.isLoading = loadingState;
+    loadingComponent.setState(this.state.isLoading);
+  };
+
+  const setPaths = (pathState) => {
+    if (!isValidPaths(pathState)) return;
+
+    this.state.paths = pathState;
+    breadcrumbComponent.setState(this.state.paths);
+  };
+
+  const setNodes = ({ isRoot, nodes }) => {
+    if (!isBoolean(isRoot) || !isValidNodes(nodes)) return;
+
+    this.state.isRoot = isRoot;
+    this.state.nodes = nodes;
+
+    nodeComponent.setState({
       isRoot: this.state.isRoot,
       nodes: this.state.nodes,
     });
-
-    loading.setState(this.state.isLoading);
-
-    imageViewer.setState(this.state.selectedImageUrl);
-
-    breadcrumb.setState(this.state.paths);
   };
 
-  const loading = new Loading({
+  const setSelectedImageUrl = (imageUrlState) => {
+    if (!isString(imageUrlState)) return;
+
+    this.state.selectedImageUrl = imageUrlState;
+    imageViewerComponent.setState(this.state.selectedImageUrl);
+  };
+
+  const loadingComponent = new Loading({
     $container,
   });
 
-  const breadcrumb = new Breadcrumb({
+  const breadcrumbComponent = new Breadcrumb({
     $container,
     initialState: this.state.paths,
     onClick: async (id) => {
       if (!id) {
-        this.setState({
-          ...this.state,
-          paths: [],
-        });
+        setPaths([]);
       } else {
         const { paths } = this.state;
         const clickedPaths = paths.findIndex((path) => path.id === id);
+        const nextPaths = paths.slice(0, clickedPaths + 1);
 
-        this.setState({
-          ...this.state,
-          paths: paths.slice(0, clickedPaths + 1),
-        });
+        setPaths(nextPaths);
       }
       await fetchNodes(id);
     },
   });
 
-  const nodes = new Nodes({
+  const nodeComponent = new Nodes({
     $container,
     initialState: {
       isRoot: this.state.isRoot,
@@ -62,56 +76,45 @@ export default function App({ $container }) {
     },
     onClick: async (node) => {
       if (node.type === 'DIRECTORY') {
+        const newPaths = [...this.state.paths, node];
+        setPaths(newPaths);
+
         await fetchNodes(node.id);
-        this.setState({
-          ...this.state,
-          paths: [...this.state.paths, node],
-        });
       }
       if (node.type === 'FILE') {
-        this.setState({
-          ...this.state,
-          selectedImageUrl: `${API_END_POINT}/static${node.filePath}`,
-        });
+        console.log(node.filePath);
+        const imageUrl = `${API_END_POINT}/static${node.filePath}`;
+        setSelectedImageUrl(imageUrl);
       }
     },
     onPrevClick: async () => {
       const paths = [...this.state.paths];
       paths.pop();
 
-      this.setState({
-        ...this.state,
-        paths,
-      });
+      setPaths(paths);
 
       const nextNodeId = paths.length === 0 ? '' : paths[paths.length - 1].id;
       await fetchNodes(nextNodeId);
     },
   });
 
-  const imageViewer = new ImageViewer({
+  const imageViewerComponent = new ImageViewer({
     $container,
     initialState: this.state.selectedImageUrl,
     onClose: () => {
-      this.setState({
-        ...this.state,
-        selectedImageUrl: null,
-      });
+      setSelectedImageUrl('');
     },
   });
 
   const fetchNodes = async (id) => {
-    this.setState({
-      ...this.state,
-      isLoading: true,
-    });
+    setLoading(true);
 
     const nodes = await request(id ? `/${id}` : '/');
-    this.setState({
-      ...this.state,
-      isRoot: id ? false : true,
-      isLoading: false,
+
+    setLoading(false);
+    setNodes({
       nodes,
+      isRoot: id ? false : true,
     });
   };
 
