@@ -1,4 +1,4 @@
-import { isDiff } from './utils.js';
+import { isDiffState } from './utils.js';
 
 export default function Nodes({ $container, initialState, onClick, onPrevClick }) {
   const $nodes = document.createElement('div');
@@ -8,7 +8,7 @@ export default function Nodes({ $container, initialState, onClick, onPrevClick }
   this.state = initialState;
 
   this.setState = (newState) => {
-    if (!isDiff(this.state, newState)) return;
+    if (!isDiffState(this.state, newState)) return;
 
     this.state = newState;
     this.render();
