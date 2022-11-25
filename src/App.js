@@ -82,19 +82,12 @@ export default function App({ $container }) {
         await fetchNodes(node.id);
       }
       if (node.type === 'FILE') {
-        console.log(node.filePath);
         const imageUrl = `${API_END_POINT}/static${node.filePath}`;
         setSelectedImageUrl(imageUrl);
       }
     },
-    onPrevClick: async () => {
-      const paths = [...this.state.paths];
-      paths.pop();
-
-      setPaths(paths);
-
-      const nextNodeId = paths.length === 0 ? '' : paths[paths.length - 1].id;
-      await fetchNodes(nextNodeId);
+    onPrevClick: () => {
+      onMovePrevPath();
     },
   });
 
@@ -105,6 +98,16 @@ export default function App({ $container }) {
       setSelectedImageUrl('');
     },
   });
+
+  const onMovePrevPath = async () => {
+    const paths = [...this.state.paths];
+    paths.pop();
+
+    setPaths(paths);
+
+    const nextNodeId = paths.length === 0 ? '' : paths[paths.length - 1].id;
+    await fetchNodes(nextNodeId);
+  };
 
   const fetchNodes = async (id) => {
     setLoading(true);
@@ -118,8 +121,20 @@ export default function App({ $container }) {
     });
   };
 
+  const bindEvent = () => {
+    window.addEventListener('keydown', (e) => {
+      const isValidBackspaceEventTrigger =
+        !this.state.isRoot && e.key === 'Backspace' && this.state.selectedImageUrl.length === 0;
+
+      if (isValidBackspaceEventTrigger) {
+        onMovePrevPath();
+      }
+    });
+  };
+
   const turnOn = () => {
     fetchNodes();
+    bindEvent();
   };
 
   turnOn();
